@@ -180,7 +180,7 @@
         </div>
       </div>
       <div class="field">
-        <label for="fArla">Valor do Arla</label>
+        <label for="fArla">Valor do Arla <span style="color:var(--slate);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
         <div class="prefix">
           <span class="p">R$</span>
           <input id="fArla" type="text" inputmode="numeric" placeholder="0,00"
@@ -191,7 +191,7 @@
 
     <!-- Prazo -->
     <div class="field">
-      <label for="fPrazo">Prazo de pagamento (dias)</label>
+      <label for="fPrazo">Prazo de pagamento (dias) <span style="color:var(--slate);font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></label>
       <input id="fPrazo" type="text" inputmode="numeric" placeholder="Ex.: 28" maxlength="4"
              oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)">
     </div>
@@ -333,8 +333,6 @@ function validar(){
   if(!c.cnpj) return 'Informe um CNPJ válido e aguarde a busca dos dados.';
   if(!c.razao) return 'Aguarde os dados da empresa serem carregados.';
   if(c.diesel <= 0) return 'Informe o valor do Diesel.';
-  if(c.arla <= 0)   return 'Informe o valor do Arla.';
-  if(c.prazo <= 0)  return 'Informe o prazo de pagamento (dias).';
   return null;
 }
 
@@ -361,7 +359,7 @@ async function salvarAri(){
     uf:       state.uf,
     diesel:   state.diesel/100,
     arla:     state.arla/100,
-    prazo:    state.prazo,
+    prazo:    state.prazo > 0 ? state.prazo : '',
     data:     dataHoraBr()
   });
   try{
@@ -448,7 +446,7 @@ function buildPdf(){
   pdf.text(moneyBr(state.arla), cx, vy);
   y += 108 + 20;
 
-  row('Prazo de Pagamento', `${state.prazo} dias`);
+  row('Prazo de Pagamento', state.prazo > 0 ? `${state.prazo} dias` : 'Não Informado');
 
   /* rodapé */
   pdf.setFont('helvetica','normal'); pdf.setFontSize(10); pdf.setTextColor(120);
@@ -475,7 +473,7 @@ async function compartilharWhats(){
   const blob = pdf.output('blob');
   const filename = pdfFilename();
   const file = new File([blob], filename, {type:'application/pdf'});
-  const text = `Preço do Combustível — ${state.fantasia || state.razao}\nDiesel: ${moneyBr(state.diesel)}\nArla: ${moneyBr(state.arla)}\nPrazo: ${state.prazo} dias`;
+  const text = `Preço do Combustível — ${state.fantasia || state.razao}\nDiesel: ${moneyBr(state.diesel)}\nArla: ${moneyBr(state.arla)}\nPrazo: ${state.prazo > 0 ? state.prazo + ' dias' : 'Não Informado'}`;
   busy(false);
 
   if(navigator.canShare && navigator.canShare({files:[file]})){
